@@ -2,27 +2,66 @@ from socket import *
 
 activeUser =[]
 activeGroup = []
+currentUser = ""
+authenticated = false
 
 
 class Post:
-    def __init__(self):
-        self.postID = -1
-        self.groupname =""
-        self.subject =""
-        self.author = ""
-        self.date = ""
-        self.data= ""
+    def __init__(self,postID,subject,author,date,data):
+        self.postID = postID
+        #self.groupname =groupname
+        self.subject =subject
+        self.author = author
+        self.date = date
+        self.data= data
 
 
 class Group:
-    def __init__(self):
-        self.groupID = -1
-        self.name = ""
-        self.postArray =[]
-        self.subscribedUsers=[]
+    def __init__(self,groupID,name):
+        self.groupID = groupID
+        self.name = name
+        self.postArray = []
+        #self.subscribedUsers = []
 
 
+#initialize some groups and posts
+group1 = Group(0,"comp.programming")
+group2 = Group(1,"comp.os.threads")
+group3 = Group(2,"comp.lang.c")
+group4 = Group(3,"comp.lang.python" )
+group5 = Group(4,"comp.lang.javascript" )
+group6 = Group(5,"comp.stonybrook" )
+group7 = Group(6,"comp.nyu" )
+group8 = Group(7,"comp.c++" )
+group9 = Group(8,"comp.ruby" )
+group10 = Group(9,"comp.java" )
+group11 = Group(10,"comp.object" )
+group12 = Group(11,"comp.algorithm" )
+group13 = Group(12,"comp.recursion" )
+group14 = Group(13,"comp.os" )
+group15 = Group(14,"comp.lang.assembly" )
 
+activeGroup.append(group1)
+activeGroup.append(group2)
+activeGroup.append(group3)
+activeGroup.append(group4)
+activeGroup.append(group5)
+activeGroup.append(group6)
+activeGroup.append(group7)
+activeGroup.append(group8)
+activeGroup.append(group9)
+activeGroup.append(group10)
+activeGroup.append(group11)
+activeGroup.append(group12)
+activeGroup.append(group13)
+activeGroup.append(group14)
+activeGroup.append(group15)
+
+for num in range(0, 44):
+    postid = (num//15)+1
+    newPost = Post(postid,"This is post"+str(postid), "Author "+str(postid), "Sat, Nov 12 19:34:03 EST 2016", "Testestsetestset"+str(postid))
+    groupToAdd = getattr(activeGroup[num%15],'postArray')
+    groupToAdd.append(newPost)
 
 serverPort = 12000
 serverSocket = socket(AF_INET,SOCK_STREAM)
@@ -38,80 +77,147 @@ while 1:
         userID = commandsAll[1]
         if userID not in activeUser:
             activeUser.append(userID)
+            currentUser = userID
+            authenticated = true
             #Send protocol back to client
+            connectionSocket.send("login success")
         else:
             # send protocol to tell client enter another id
-            pass
+            connectionSocket.send("login failed")
 
-    elif firstcommand=="ag":
-        index = 0               # index in the activeGroup Array
-        optionalcommand = commandsAll[1]
-        if optionalcommand == None:
-            optionalcommand = 5
-            #here uses the default value for N -> showing N items at a time
+    #############ONLY IF LOGIN SUCCESSFULLY
+    while authenticated == true:
+        commandsAll = connectionSocket.recv(1024).split(" ")
+        if firstcommand=="ag":
+            index = 0               # index in the activeGroup Array
+            buffer=""
+            optionalcommand = commandsAll[1]
+            if optionalcommand == None:
+                optionalcommand = 5
+                #here uses the default value for N -> showing N items at a time
 
-        while index<optionalcommand:
-            # list all the group up to N
-            index += 1
-            pass
+            while index<optionalcommand:
+                # list all the group up to N
+                if currentUser not in getattr(activeGroup[index],'subscribedUsers'):
+                    buffer += index+'. ( )     '+getattr(activeGroup[index], 'name')  +'\n'
+                else:
+                    buffer += index+'. (s)     '+getattr(activeGroup[index], 'name') +'\n'
+                index += 1
+            connectionSocket.send(buffer)
+
+            while 1:
+                buffer = "'"
+                subcommand = connectionSocket.recv(1024).split(" ")
+                if subcommand[0] == 's':
+                    temp = 0
+                    while subcommand[temp+1]!=None:
+                        ##subscribe to index + argument group
+                        groupToSubscribe = getattr(activeGroup[index + int(subcommand[temp+1])], 'subscribedUsers')
+                       # activeGroup[groupToSubscribe].getUserArray.AddtoGroup
+                        groupToSubscribe.append(currentUser)
+                        temp += 1
 
 
+                elif subcommand[0] =='u':
+                    temp = 0
+                    while subcommand[temp + 1] != None:
+                        ##subscribe to index + argument group
+                        groupToUnsubscribe = getattr(activeGroup[index + int(subcommand[temp+1])], 'subscribedUsers')
+                        # activeGroup[groupToSubscribe].getUserArray.Remove
+                        groupToUnsubscribe.remove(currentUser)
+                        temp += 1
 
-        while 1:
-            subcommand = connectionSocket.recv(1024).split(" ")
-            if subcommand[0] == 's':
-                temp = 0
-                while subcommand[temp+1]!=None:
-                    ##subscribe to index + argument group
-                    groupToSubscribe = index + subcommand[temp+1]
-                   # activeGroup[groupToSubscribe].getUserArray.AddtoGroup
-                    temp+=1
+                elif subcommand[0] == 'n':
+                    # list next set of group
+                    temp =0
+                    while temp<optionalcommand :
+                        if index>len(activeGroup):
+                            buffer+="------All Group Has Been Shown------"
+                            break
+                        if currentUser not in getattr(activeGroup[index],'subscribedUsers'):
+                            buffer+=index+'. ( )     '+getattr(activeGroup[index], 'name')+'\n'
+                        else:
+                            buffer+=index+'. (s)     '+getattr(activeGroup[index], 'name')+'\n'
+                        index += 1
+                        temp += 1
+                    connectionSocket.send(buffer)
+                elif subcommand[0] == 'q':
+                    temp = 0
+
+                    while temp < len(activeGroup):
+                        ##### print all group before finishing
+                        if currentUser not in getattr(activeGroup[temp],'subscribedUsers'):
+                            buffer+= temp+'. ( )     '+getattr(activeGroup[temp], 'name')+'\n'
+                        else:
+                            buffer+=temp+'. (s)     '+getattr(activeGroup[temp], 'name')+'\n'
+
+                        temp += 1
+                    connectionSocket.send(buffer)
+                    break
 
 
-            elif subcommand[0] =='u':
-                temp = 0
-                while subcommand[temp + 1] != None:
-                    ##subscribe to index + argument group
-                    groupToSubscribe = index + subcommand[temp + 1]
-                    # activeGroup[groupToSubscribe].getUserArray.Remove
-                    temp +=1
+        elif firstcommand == "sg":
+            while 1:
+                subcommand = connectionSocket.recv(1024)
+                index = 0               # index in the activeGroup Array
+                buffer=""
+                quit = false
+                optionalcommand = commandsAll[1]
+                if optionalcommand == None:
+                    optionalcommand = 5
+                    #here uses the default value for N -> showing N items at a time
+
+                while index<optionalcommand:
+                    # list all the group up to N
+                    if currentUser in getattr(activeGroup[index],'subscribedUsers'):
+                        buffer += index+'. POST### '+getattr(activeGroup[index], 'name') + '\n'
+                    index += 1
+                connectionSocket.send(buffer)
+                while 1:
+                    buffer = "'"
+                    subcommand = connectionSocket.recv(1024).split(" ")
+                    if subcommand =='u':
+                        temp = 0
+                        while subcommand[temp + 1] != None:
+                            ##subscribe to index + argument group
+                            groupToUnsubscribe = getattr(activeGroup[index + int(subcommand[temp+1])], 'subscribedUsers')
+                            # activeGroup[groupToSubscribe].getUserArray.Remove
+                            groupToUnsubscribe.remove(currentUser)
+                            temp += 1
+                    elif subcommand == 'n':
+                        temp =0
+                        while temp<optionalcommand :
+                            if index>len(activeGroup):
+                                buffer+="------All Group Has Been Shown------"
+                                break
+                            if currentUser  in getattr(activeGroup[index],'subscribedUsers'):
+                                buffer+=index+'. POST###'+getattr(activeGroup[index], 'name')+'\n'
+
+                            index += 1
+                            temp += 1
+                        connectionSocket.send(buffer)
+
+                    elif subcommand == 'q':
+                        temp = 0
+
+                        while temp < len(activeGroup):
+                            ##### print all group before finishing
+                            if currentUser in getattr(activeGroup[temp],'subscribedUsers'):
+                                buffer+= temp+'. POST###  '+getattr(activeGroup[temp], 'name')+'\n'
 
 
-            elif subcommand[0] == 'n':
-                # list next set of group
-                temp =0
-                while temp<optionalcommand :
-                    if index>len(activeGroup):
-                        ##### QUIT if no more active groups to show
+                            temp += 1
+                        connectionSocket.send(buffer)
                         break
-                    index +=1
-                    temp +=1
-            elif subcommand[0] == 'q':
-                temp = 0
+                   
 
-                while index > len(activeGroup):
-                    ##### print all group before finishing
+        elif firstcommand == "rg":
+            pass
 
-                    temp += 1
-                break
-
-
-    elif firstcommand == "sg":
-        while 1:
-            subcommand = connectionSocket.recv(1024)
-
-            if subcommand =='u':
-                pass
-            elif subcommand == 'n':
-                pass
-            elif subcommand == 'q':
-                break
-
-    elif firstcommand == "rg":
-        pass
-
-    elif firstcommand == "logout":
-        #remove user from activeUser array
-        pass
+        elif firstcommand == "logout":
+            #remove user from activeUser array
+            authenticated = false
+            connectionSocket.send("logout success")
+            break
 
 
