@@ -98,7 +98,6 @@ while 1:
 
 
         else:
-            print(22222)
             # send protocol to tell client enter another id
             connectionSocket.send("login failed")
 
@@ -275,6 +274,7 @@ while 1:
 
         elif firstcommand == "logout":
             # remove user from activeUser array
+            activeUser.remove(currentUser)
             authenticated = False
             connectionSocket.send("logout success")
 
