@@ -69,8 +69,7 @@ class Group:
 # activeGroup.append(group14)
 # activeGroup.append(group15)
 
-with open('serverData.pkl', 'rb') as f:
-    activeGroup = pickle.load(f)
+
 
 
 # for num in range(0, 44):
@@ -83,7 +82,7 @@ with open('serverData.pkl', 'rb') as f:
 # #use for test
 # activeGroup[0].subscribedUsers.append('jhao')
 ####
-serverPort = 12001
+serverPort = 12006
 serverSocket = socket(AF_INET, SOCK_STREAM)
 serverSocket.bind(('', serverPort))
 serverSocket.listen(5)
@@ -98,7 +97,8 @@ class loginThread(threading.Thread):
 
     def run(self):
         self.connectionSocket.send('login success')
-
+        with open('serverData.pkl', 'rb') as f:
+            activeGroup = pickle.load(f)
         while self.running == True:
             firstcommand =""
             buffer = ""
@@ -286,6 +286,7 @@ class loginThread(threading.Thread):
 
                                     if int(subcommand) in range(0, defaultN):
                                         currentpost = currentGroup.postArray[int(subcommand)]
+                                        currentpost.read = True
                                         postdiv = currentpost.data.split('\n')
                                         buffer += 'Group : ' + currentGroup.name + '\n'
                                         buffer += 'Subject : ' + currentpost.subject + '\n'
@@ -313,7 +314,10 @@ class loginThread(threading.Thread):
                                             elif subsubcommand[0] == 'q':
                                                 for j in range(0, defaultN):
                                                     post = currentGroup.postArray[j]
-                                                    buffer += str(j) + '.  ' + post.date + '  ' + post.subject + '\n'
+                                                    if (post.read == True):
+                                                        buffer += str(j) + '.  ' + post.date + '  ' + post.subject + '\n'
+                                                    else:
+                                                        buffer += str(j) + '. N ' + post.date + '  ' + post.subject + '\n'
                                                 self.connectionSocket.send(buffer)
                                                 break
                                 elif cmd[0] == 'r':
@@ -344,7 +348,10 @@ class loginThread(threading.Thread):
                                         defaultN = end
                                         for it in range(start, end):
                                             post = currentGroup.postArray[it]
-                                            buffer += str(it) + '.  ' + post.date + '  ' + post.subject + '\n'
+                                            if (post.read == True):
+                                                buffer += str(i) + '.  ' + post.date + '  ' + post.subject + '\n'
+                                            else:
+                                                buffer += str(i) + '. N ' + post.date + '  ' + post.subject + '\n'
                                         self.connectionSocket.send(buffer)
 
                                     else:
