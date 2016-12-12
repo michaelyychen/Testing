@@ -367,7 +367,9 @@ while 1:
                                         contentcont += connectionSocket.recv(1024).replace('\r\n', '')
                                         content += contentcont + '\n'
                                     content = content.replace('%(end)', '')
+
                                     date = datetime.now().strftime("%I:%M %p, %B %d,%Y")
+
                                     NPost = Post(postid, subject, currentUser, date, content)
                                     currentGroup.postArray.insert(0, NPost)
                                     buffer += 'Post Created \n'
