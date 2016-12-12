@@ -11,14 +11,19 @@ port = int(port)
 clientSocket = socket(AF_INET, SOCK_STREAM)
 
 clientSocket.connect((host,port))
-sentence = raw_input('Please Enter Your User Name (example: login <username> ) :')
+sentence = raw_input('Please Enter Your User Name (ex: login <username>):')
 clientSocket.send(sentence)
 
-while 1:
-    loginreceived = clientSocket.recv(1024)
-    if loginreceived =="login success":
-        while 1 :
-            cmd = raw_input(' >>>')
-            clientSocket.send(cmd)
-            received = clientSocket.recv(1024)
-            print received
+
+loginreceived = clientSocket.recv(1024)
+print (loginreceived)
+if loginreceived =="login success":
+    while 1 :
+        cmd = raw_input('>>> ')
+        clientSocket.send(cmd)
+        received = clientSocket.recv(1024)
+        print (received)
+        if received =="logout success":
+        	break
+
+

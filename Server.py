@@ -93,13 +93,14 @@ while 1:
             authenticated = True
 
             #Send protocol back to client
-            connectionSocket.send("login success\n")
+            connectionSocket.send("login success")
 
 
 
         else:
+            print(22222)
             # send protocol to tell client enter another id
-            connectionSocket.send("login failed\n")
+            connectionSocket.send("login failed")
 
 
     while authenticated == True:
