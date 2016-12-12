@@ -93,13 +93,11 @@ while 1:
             authenticated = True
 
             #Send protocol back to client
-            connectionSocket.send("login success\n")
-
-
+            connectionSocket.send("login success")
 
         else:
             # send protocol to tell client enter another id
-            connectionSocket.send("login failed\n")
+            connectionSocket.send("login failed")
 
 
     while authenticated == True:
@@ -127,7 +125,7 @@ while 1:
             connectionSocket.send(buffer)
 
             while quit==False:
-                
+
                 buffer = "'"
 
                 subcommand = connectionSocket.recv(1024).split()
@@ -146,7 +144,7 @@ while 1:
                      temp = 1
                      while temp<len(subcommand):
                         ##subscribe to index + argument group
-                        groupToUnsubscribe = getattr(activeGroup[int(subcommand[temp ])], 'subscribedUsers')
+                        groupToUnsubscribe = getattr(activeGroup[int(subcommand[temp])], 'subscribedUsers')
                         print ("UNSubscribing group " + getattr(activeGroup[int(subcommand[temp])],'name'))
                         # activeGroup[groupToSubscribe].getUserArray.Remove
                         groupToUnsubscribe.remove(currentUser)
