@@ -1,6 +1,6 @@
 from socket import *
 import pickle
-import datetime
+from datetime import *
 
 activeUser = []
 activeGroup = []
@@ -77,8 +77,10 @@ for num in range(0, 44):
 
     groupToAdd = getattr(activeGroup[num % 15], 'postArray')
     groupToAdd.append(newPost)
-
-serverPort = 12000
+#use for test
+activeGroup[0].subscribedUsers.append('jhao')
+####
+serverPort = 12001
 serverSocket = socket(AF_INET, SOCK_STREAM)
 serverSocket.bind(('', serverPort))
 serverSocket.listen(5)
@@ -199,7 +201,9 @@ while 1:
                                 buffer += str(temp) + '. (s)     ' + getattr(activeGroup[temp], 'name') + '\n'
                             temp += 1
                         connectionSocket.send(buffer)
-                        quit == True
+                        quit = True
+                    else :
+                        connectionSocket.send('input invalid')
 
             elif firstcommand == "sg":
                 index = 0  # index in the activeGroup Array
@@ -360,7 +364,7 @@ while 1:
                                     subject = connectionSocket.recv(1024).replace('\r\n', '')
                                     connectionSocket.send('Please Give the Content of your new post, end by %(end)\n')
                                     content = connectionSocket.recv(1024).replace('\r\n', '') + '\n'
-                                    contentcont = ''
+                                    contentcont = content
                                     while contentcont.find('%(end)') == -1:
                                         connectionSocket.send('>>>')
                                         contentcont = ''
