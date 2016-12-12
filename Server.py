@@ -82,6 +82,9 @@ class Group:
 # #use for test
 # activeGroup[0].subscribedUsers.append('jhao')
 ####
+with open('serverData.pkl', 'rb') as f:
+    activeGroup = pickle.load(f)
+
 serverPort = 12006
 serverSocket = socket(AF_INET, SOCK_STREAM)
 serverSocket.bind(('', serverPort))
@@ -97,8 +100,7 @@ class loginThread(threading.Thread):
 
     def run(self):
         self.connectionSocket.send('login success')
-        with open('serverData.pkl', 'rb') as f:
-            activeGroup = pickle.load(f)
+
         while self.running == True:
             firstcommand =""
             buffer = ""
