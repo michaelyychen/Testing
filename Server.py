@@ -18,6 +18,7 @@ class Post:
         self.author = author
         self.date = date
         self.data = data
+        self.read = False
 
 
 class Group:
@@ -82,7 +83,7 @@ with open('serverData.pkl', 'rb') as f:
 # #use for test
 # activeGroup[0].subscribedUsers.append('jhao')
 ####
-serverPort = 12001
+serverPort = 12004
 serverSocket = socket(AF_INET, SOCK_STREAM)
 serverSocket.bind(('', serverPort))
 serverSocket.listen(5)
@@ -260,7 +261,10 @@ class loginThread(threading.Thread):
 
                             for i in range(0, defaultN):
                                 post = currentGroup.postArray[i]
-                                buffer += str(i) + '.  ' + post.date + '  ' + post.subject + '\n'
+                                if(post.read == True):
+                                    buffer += str(i) + '.  ' + post.date + '  ' + post.subject + '\n'
+                                else:
+                                    buffer += str(i) + '. N ' + post.date + '  ' + post.subject + '\n'
                             self.connectionSocket.send(buffer)
                             while 1:
                                 cmd = self.connectionSocket.recv(1024).split()
@@ -309,12 +313,14 @@ class loginThread(threading.Thread):
                                         if len(postnum) == 1:
                                             # only mark one post
                                             buffer += 'mark post ' + postnum[0] + 'as reader' + '\n'
+                                            currentGroup.postArray[int(postnum[0])].read = True
                                             self.connectionSocket.send(buffer)
 
                                         else:
                                             for k in range(int(postnum[0]), int(postnum[1]) + 1):
                                                 # mark all the post
                                                 buffer += 'mark post ' + str(k) + 'as readed' + '\n'
+                                                currentGroup.postArray[k].read = True
                                             self.connectionSocket.send(buffer)
 
                                 elif cmd[0] == 'n':
