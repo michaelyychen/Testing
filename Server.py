@@ -1,6 +1,7 @@
 from socket import *
 import pickle
 import datetime
+import threading
 
 activeUser = []
 activeGroup = []
@@ -83,43 +84,17 @@ serverSocket = socket(AF_INET, SOCK_STREAM)
 serverSocket.bind(('', serverPort))
 serverSocket.listen(5)
 print ('The server is ready to receive, the port number is ' + str(serverPort))
-while 1:
-    (connectionSocket, addr) = serverSocket.accept()
-    while 1:
-
-        commandsOriginal = connectionSocket.recv(1024)
-        commandsAll = commandsOriginal.split()
-        firstcommand = commandsAll[0]
-        print (commandsOriginal)
-        if commandsOriginal == "exit":
-            connectionSocket.send("client exit")
-            break
-        elif commandsOriginal == "help":
-            connectionSocket.send("print usage")
-
-        elif firstcommand == "saveServer":
-            with open('serverData.pkl', 'wb') as output:
-                pickle.dump(activeGroup, output, pickle.HIGHEST_PROTOCOL)
-
-        elif firstcommand == "login":
-            userID = commandsAll[1]
-
-            if userID not in activeUser:
-                activeUser.append(userID)
-                currentUser = userID
-                authenticated = True
-
-                #Send protocol back to client
-                connectionSocket.send("login success")
-
-            else:
-                # send protocol to tell client enter another id
-                connectionSocket.send("login failed")
-        else:
-            connectionSocket.send("invalid command")
 
 
-        while authenticated == True:
+class loginThread(threading.Thread):
+    def __init__(self,connectionSocket ):
+        super(loginThread, self).__init__()
+        self.connectionSocket = connectionSocket
+
+    def run(self):
+        connectionSocket.send('login success')
+
+        while 1:
             firstcommand =""
             buffer = ""
             commandsAll = connectionSocket.recv(1024).split()
@@ -145,7 +120,7 @@ while 1:
                 connectionSocket.send(buffer)
 
                 while quit==False:
-                    
+
                     buffer = "'"
 
                     subcommand = connectionSocket.recv(1024).split()
@@ -396,9 +371,52 @@ while 1:
             elif firstcommand == "logout":
                 # remove user from activeUser array
                 activeUser.remove(currentUser)
-                authenticated = False
                 connectionSocket.send("logout success")
+                self.stop()
 
             else:
                 connectionSocket.send("invalid command")
+
+    def stop(self):
+        self._stop.set()
+
+
+while 1:
+    (connectionSocket, addr) = serverSocket.accept()
+    while 1:
+
+        commandsOriginal = connectionSocket.recv(1024)
+        commandsAll = commandsOriginal.split()
+        firstcommand = commandsAll[0]
+        print (commandsOriginal)
+        if commandsOriginal == "exit":
+            connectionSocket.send("client exit")
+            break
+        elif commandsOriginal == "help":
+            connectionSocket.send("print usage")
+
+        elif firstcommand == "saveServer":
+            with open('serverData.pkl', 'wb') as output:
+                pickle.dump(activeGroup, output, pickle.HIGHEST_PROTOCOL)
+
+        elif firstcommand == "login":
+            userID = commandsAll[1]
+
+            if userID not in activeUser:
+                activeUser.append(userID)
+                currentUser = userID
+                authenticated = True
+
+                #Send protocol back to client
+                (connectionSocket, addr) = serverSocket.accept()
+                thread = loginThread(connectionSocket)
+                thread.start()
+
+            else:
+                # send protocol to tell client enter another id
+                connectionSocket.send("login failed")
+        else:
+            connectionSocket.send("invalid command")
+
+
 
