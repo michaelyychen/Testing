@@ -256,38 +256,139 @@ while 1:
 
 
             elif firstcommand == "rg":
-                if commandsAll[1] in activeGroup:
-                    defaultN = 5
-                    if len(commandsAll) > 2:
-                        defaultN = commandsAll[2]
-                        index = activeGroup.index(commandsAll[1])
-                        if (defaultN > len(activeGroup[index].postArray)):
-                            defaultN = len(activeGroup[index].postArray)
-                    for i in range(0,defaultN):
-                        connectionSocket.send(activeGroup[index].postArray[i])
+                buffer = ""
+                currentGroup = Group(-1, "temp")
+                foundGroup = False
+                if len(commandsAll) >= 2:
+                    for group in activeGroup:
+                        if commandsAll[1] == group.name:
+                            currentGroup = group
+                            foundGroup = True
+                            break
+                    if foundGroup == True:
+                        defaultN = 5
+                        if len(commandsAll) > 2:
+                            defaultN = int(commandsAll[2])
 
+                        if defaultN > len(currentGroup.postArray):
+                            defaultN = len(currentGroup.postArray)
+
+                        if currentUser in currentGroup.subscribedUsers:
+
+                            for i in range(0, defaultN):
+                                post = currentGroup.postArray[i]
+                                buffer += str(i) + '.  ' + post.date + '  ' + post.subject + '\n'
+                            connectionSocket.send(buffer)
+                            while 1:
+                                cmd = connectionSocket.recv(1024).split()
+
+                                subcommand = cmd[0].replace('\r\n', '')
+                                buffer = ''
+                                if subcommand.isdigit():
+
+                                    if int(subcommand) in range(0, defaultN):
+                                        currentpost = currentGroup.postArray[int(subcommand)]
+                                        postdiv = currentpost.data.split('\n')
+                                        buffer += 'Group : ' + currentGroup.name + '\n'
+                                        buffer += 'Subject : ' + currentpost.subject + '\n'
+                                        buffer += 'Author : ' + currentpost.author + '\n'
+                                        buffer += 'Date : ' + currentpost.date + '\n\n'
+                                        buffer += currentGroup.postArray[int(subcommand)].data + '\n'
+                                        connectionSocket.send(buffer)
+
+                                        while 1:
+                                            buffer = ''
+                                            subsubcommand = connectionSocket.recv(1024).split()
+
+                                            if subsubcommand[0].isdigit():
+                                                line = int(subsubcommand[0])
+                                                if line > len(postdiv):
+                                                    line = len(postdiv)
+                                                buffer += 'Group : ' + currentGroup.name + '\n'
+                                                buffer += 'Subject : ' + currentpost.subject + '\n'
+                                                buffer += 'Author : ' + currentpost.author + '\n'
+                                                buffer += 'Date : ' + currentpost.date + '\n\n'
+                                                for linenum in range(0, line):
+                                                    buffer += postdiv[linenum] + '\n'
+                                                connectionSocket.send(buffer)
+
+                                            elif subsubcommand[0] == 'q':
+                                                for j in range(0, defaultN):
+                                                    post = currentGroup.postArray[j]
+                                                    buffer += str(j) + '.  ' + post.date + '  ' + post.subject + '\n'
+                                                connectionSocket.send(buffer)
+                                                break
+                                elif cmd[0] == 'r':
+                                    if len(cmd) < 2:
+                                        connectionSocket.send('invalid r cmd')
+                                    else:
+                                        postnum = cmd[1].split('-')
+                                        if len(postnum) == 1:
+                                            # only mark one post
+                                            buffer += 'mark post ' + postnum[0] + 'as reader' + '\n'
+                                            connectionSocket.send(buffer)
+
+                                        else:
+                                            for k in range(int(postnum[0]), int(postnum[1]) + 1):
+                                                # mark all the post
+                                                buffer += 'mark post ' + str(k) + 'as readed' + '\n'
+                                            connectionSocket.send(buffer)
+
+                                elif cmd[0] == 'n':
+                                    buffer = ''
+                                    if defaultN < len(currentGroup.postArray):
+                                        start = defaultN
+                                        end = 2 * defaultN
+                                        if end > len(currentGroup.postArray):
+                                            end = len(currentGroup.postArray)
+                                        defaultN = end
+                                        for it in range(start, end):
+                                            post = currentGroup.postArray[it]
+                                            buffer += str(it) + '.  ' + post.date + '  ' + post.subject + '\n'
+                                        connectionSocket.send(buffer)
+
+                                    else:
+                                        connectionSocket.send('all post is shown, exist the rg menu \n')
+                                        break
+
+
+
+                                elif cmd[0] == 'p':
+                                    postid = str(currentGroup.groupID) + '-' + str(len(currentGroup.postArray) + 1)
+                                    connectionSocket.send('Please Give a Subject of your new post\n')
+                                    subject = connectionSocket.recv(1024).replace('\r\n', '')
+                                    connectionSocket.send('Please Give the Content of your new post, end by %(end)\n')
+                                    content = connectionSocket.recv(1024).replace('\r\n', '') + '\n'
+                                    contentcont = ''
+                                    while contentcont.find('%(end)') == -1:
+                                        connectionSocket.send('>>>')
+                                        contentcont = ''
+                                        contentcont += connectionSocket.recv(1024).replace('\r\n', '')
+                                        content += contentcont + '\n'
+                                    content = content.replace('%(end)', '')
+                                    date = datetime.datetime.now().strftime("%I:%M %p, %B %d,%Y")
+                                    NPost = Post(postid, subject, currentUser, date, content)
+                                    currentGroup.postArray.insert(0, NPost)
+                                    buffer += 'Post Created \n'
+                                    for i in range(0, defaultN):
+                                        post = currentGroup.postArray[i]
+                                        buffer += str(i) + '.  ' + post.date + '  ' + post.subject + '\n'
+                                    connectionSocket.send(buffer)
+
+                                elif cmd[0] == 'q':
+                                    connectionSocket.send('quit rg menu, back to main menu')
+                                    break
+                                else:
+                                    connectionSocket.send('input invalid\n')
+
+                        else:
+                            connectionSocket.send('You are not subscribe this group \n')
 
                     else:
-                        print ('you are not in the group')
+                        connectionSocket.send("The Group is invalid")
 
-                    while 1:
-                        subcommand = connectionSocket.recv(1024)
-
-                        if subcommand[0] in range(0,defaultN):
-                            while 1:
-                                subsubcommand = connectionSocket.recv(1024)
-                                if subsubcommand[0] == 'n':
-                                    pass
-                                elif subsubcommand[0] == 'q':
-                                    break
-                        elif subcommand[0] == 'r':
-                            pass
-                        elif subcommand[0] == 'n':
-                            pass
-                elif subcommand[0] == 'p':
-                    pass
-                elif subcommand[0] == 'q':
-                    break
+                else:
+                    connectionSocket.send('invalid rg cmd ex: rg [groupname] (optional: number) \n')
 
             elif firstcommand == "logout":
                 # remove user from activeUser array
