@@ -49,7 +49,7 @@ while isRunning==True:
 			history = text_file.read()
 			text_file.close()
 			sentence = sentence + ' ' + history
-			print(sentence + ' ' + history)
+			#print(sentence + ' ' + history)
 
 
 	clientSocket.send(sentence)
