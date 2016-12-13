@@ -138,20 +138,20 @@ class loginThread(threading.Thread):
                     authenticated = True
 
                 #history parser
-                if len(commandsAll)>2:
-                    i = 2
-                    while i < len(commandsAll):
-                        # history is in the form of 1-2,3-4, 1-x
-                        history = str(commandsAll[i]).split("-")
-                      
-                        group = int(history[0])
-                        if userID not in activeGroup[group].subscribedUsers:
-                            activeGroup[group].subscribedUsers.append(userID)
-                        if str(history[1]) != 'x':
-                            post = int(history[1])
-                            if post < len(activeGroup[group].postArray):
-                                activeGroup[group].postArray[post].read = True
-                        i += 1
+                    if len(commandsAll)>2:
+                        i = 2
+                        while i < len(commandsAll):
+                            # history is in the form of 1-2,3-4, 1-x
+                            history = str(commandsAll[i]).split("-")
+
+                            group = int(history[0])
+                            if userID not in activeGroup[group].subscribedUsers:
+                                activeGroup[group].subscribedUsers.append(userID)
+                            if str(history[1]) != 'x':
+                                post = int(history[1])
+                                if post < len(activeGroup[group].postArray):
+                                    activeGroup[group].postArray[post].read = True
+                            i += 1
 
                     #Send protocol back to client
                     self.connectionSocket.send("login success")
