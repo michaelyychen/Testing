@@ -85,7 +85,7 @@ class Group:
 with open('serverData.pkl', 'rb') as f:
     activeGroup = pickle.load(f)
 
-serverPort = 12008
+serverPort = 13003
 serverSocket = socket(AF_INET, SOCK_STREAM)
 serverSocket.bind(('', serverPort))
 serverSocket.listen(5)
@@ -171,8 +171,8 @@ class loginThread(threading.Thread):
                                     temp += 1
 
                             elif subcommand[0] == 'u':
-                                 temp = 1
-                                 while temp<len(subcommand):
+                                temp = 1
+                                while temp<len(subcommand):
                                     ##subscribe to index + argument group
                                     if int(subcommand[temp])< index:
                                         groupToUnsubscribe = getattr(activeGroup[int(subcommand[temp ])], 'subscribedUsers')
@@ -213,13 +213,14 @@ class loginThread(threading.Thread):
                                     temp += 1
                                 self.connectionSocket.send(buffer)
                                 quit = True
+                                break
                             else :
                                 self.connectionSocket.send('input invalid')
 
                     elif firstcommand == "sg":
                         index = 0  # index in the activeGroup Array
                         buffer = ""
-                        quit = False
+                        quitSG = False
                         optionalcommand = 5
                         if len(commandsAll) > 1:
                             optionalcommand = commandsAll[1]
@@ -228,15 +229,21 @@ class loginThread(threading.Thread):
                         while index < optionalcommand:
                             # list all the group up to N
                             if currentUser in getattr(activeGroup[index], 'subscribedUsers'):
-                                buffer += index + '. POST### ' + getattr(activeGroup[index], 'name') + '\n'
-                                index += 1
-                            self.connectionSocket.send(buffer)
+                                unreadPost = 0
+                                groupPost = getattr(activeGroup[index], 'postArray')
+                                for x in range(0, len(groupPost)):
+                                    if groupPost[x].read == False:
+                                        unreadPost += 1
 
-                        while quit == False:
+                                buffer += str(index) + ' '+str(unreadPost) +' '+ getattr(activeGroup[index], 'name') + '\n'
+                            index += 1
+                        self.connectionSocket.send(buffer)
+
+                        while quitSG == False:
 
                             buffer = "'"
                             subcommand = self.connectionSocket.recv(1024).split()
-                            if subcommand == 'u':
+                            if subcommand[0] == 'u':
                                 temp = 1
                                 while temp < len(subcommand):
                                     if int(subcommand[temp])< index:
@@ -247,7 +254,7 @@ class loginThread(threading.Thread):
                                     else:
                                         print ("index out of bound")
                                     temp += 1
-                            elif subcommand == 'n':
+                            elif subcommand[0] == 'n':
                                 temp = 0
                                 while temp < optionalcommand:
                                     if index > len(activeGroup):
@@ -255,26 +262,39 @@ class loginThread(threading.Thread):
                                         quit = True
                                         break
                                     if currentUser in getattr(activeGroup[index], 'subscribedUsers'):
-                                        buffer += index + '. POST###' + getattr(activeGroup[index], 'name') + '\n'
+                                        unreadPost = 0
+                                        groupPost = getattr(activeGroup[index], 'postArray')
+                                        for x in range(0, len(groupPost)):
+                                            if groupPost[x].read == False:
+                                                unreadPost += 1
+
+                                        buffer += str(index) + ' '+str(unreadPost) +' '+ getattr(activeGroup[index], 'name') + '\n'
 
                                     index += 1
                                     temp += 1
                                 self.connectionSocket.send(buffer)
 
-                            elif subcommand == 'q':
+                            elif subcommand[0] == 'q':
                                 temp = 0
 
                                 while temp < len(activeGroup):
                                     ##### print all group before finishing
                                     if currentUser in getattr(activeGroup[temp], 'subscribedUsers'):
-                                        buffer += temp + '. POST###  ' + getattr(activeGroup[temp], 'name') + '\n'
+                                        unreadPost = 0
+                                        groupPost = getattr(activeGroup[temp], 'postArray')
+                                        for x in range(0, len(groupPost)):
+                                            if groupPost[x].read == False:
+                                                unreadPost += 1
+
+                                        buffer += str(temp) + ' '+str(unreadPost) +' '+ getattr(activeGroup[temp], 'name') + '\n'
 
                                     temp += 1
                                 self.connectionSocket.send(buffer)
-                                quit == True
+                                quitSG = True
+                                break
 
                             else:
-                                self.connectionSocket.send('ag input invalid\n')
+                                self.connectionSocket.send('sg input invalid\n')
 
                     elif firstcommand == "rg":
                         buffer = ""
@@ -443,8 +463,6 @@ class loginThread(threading.Thread):
 
     def stop(self):
         self._stop.set()
-
-
 
 
 
