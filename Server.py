@@ -162,13 +162,14 @@ class loginThread(threading.Thread):
                                     #subscribe to index + argument group
                                     if int(subcommand[temp])< index:
                                         groupToSubscribe = getattr(activeGroup[int(subcommand[temp])], 'subscribedUsers')
-                                        print ("Subscribing group " + getattr(activeGroup[int(subcommand[temp])],'name'))
+                                        buffer += "Subscribing group " + getattr(activeGroup[int(subcommand[temp])],'name')+'\n'
                                         # activeGroup[groupToSubscribe].getUserArray.AddtoGroup
                                         groupToSubscribe.append(currentUser)
                                     else:
                                         print ("index out of bound")
 
                                     temp += 1
+                                self.connectionSocket.send(buffer)
 
                             elif subcommand[0] == 'u':
                                 temp = 1
@@ -176,12 +177,13 @@ class loginThread(threading.Thread):
                                     ##subscribe to index + argument group
                                     if int(subcommand[temp])< index:
                                         groupToUnsubscribe = getattr(activeGroup[int(subcommand[temp ])], 'subscribedUsers')
-                                        print ("UNSubscribing group " + getattr(activeGroup[int(subcommand[temp])],'name'))
+                                        buffer += "UNSubscribing group " + getattr(activeGroup[int(subcommand[temp])],'name')+'\n'
                                         # activeGroup[groupToSubscribe].getUserArray.Remove
                                         groupToUnsubscribe.remove(currentUser)
                                     else:
                                         print ("index out of bound")
                                     temp += 1
+                                self.connectionSocket.send(buffer)
 
                             elif subcommand[0] == 'n':
                                 # list next set of group
@@ -249,11 +251,13 @@ class loginThread(threading.Thread):
                                     if int(subcommand[temp])< index:
                                         ##subscribe to index + argument group
                                         groupToUnsubscribe = getattr(activeGroup[int(subcommand[temp + 1])], 'subscribedUsers')
+                                        buffer += "Unsubscribing group " + getattr(activeGroup[int(subcommand[temp])],'name')+'\n'
                                         # activeGroup[groupToSubscribe].getUserArray.Remove
                                         groupToUnsubscribe.remove(currentUser)
                                     else:
                                         print ("index out of bound")
                                     temp += 1
+                                self.connectionSocket.send(buffer)
                             elif subcommand[0] == 'n':
                                 temp = 0
                                 while temp < optionalcommand:
