@@ -96,7 +96,7 @@ class Group:
 with open('serverData.pkl', 'rb') as f:
     activeGroup = pickle.load(f)
 
-serverPort = 12005
+serverPort = 12003
 serverSocket = socket(AF_INET, SOCK_STREAM)
 serverSocket.bind(('', serverPort))
 serverSocket.listen(5)
@@ -198,7 +198,9 @@ class loginThread(threading.Thread):
                                             groupToSubscribe = getattr(activeGroup[int(subcommand[temp])], 'subscribedUsers')
                                             buffer += "Subscribing group " + getattr(activeGroup[int(subcommand[temp])],'name')+'\n'
                                             # activeGroup[groupToSubscribe].getUserArray.AddtoGroup
-                                            groupToSubscribe.append(currentUser)
+                                            if currentUser not in groupToSubscribe:
+                                                groupToSubscribe.append(currentUser)
+
                                         else:
                                             print ("index out of bound")
 
@@ -213,7 +215,8 @@ class loginThread(threading.Thread):
                                             groupToUnsubscribe = getattr(activeGroup[int(subcommand[temp ])], 'subscribedUsers')
                                             buffer += "UNSubscribing group " + getattr(activeGroup[int(subcommand[temp])],'name')+'\n'
                                             # activeGroup[groupToSubscribe].getUserArray.Remove
-                                            groupToUnsubscribe.remove(currentUser)
+                                            if currentUser in groupToUnsubscribe:
+                                                groupToUnsubscribe.remove(currentUser)
                                         else:
                                             print ("index out of bound")
                                         temp += 1
@@ -290,7 +293,9 @@ class loginThread(threading.Thread):
                                             groupToUnsubscribe = getattr(activeGroup[int(subcommand[temp])], 'subscribedUsers')
                                             buffer += "Unsubscribing group " + getattr(activeGroup[int(subcommand[temp])],'name')+'\n'
                                             # activeGroup[groupToSubscribe].getUserArray.Remove
-                                            groupToUnsubscribe.remove(currentUser)
+                                            if currentUser in groupToUnsubscribe:
+                                                groupToUnsubscribe.remove(currentUser)
+                                            
                                         else:
                                             print ("index out of bound")
                                         temp += 1
