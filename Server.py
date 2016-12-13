@@ -10,6 +10,17 @@ currentUser = ""
 authenticated = False
 
 
+def sort(postlist):
+    host = []
+    for i in range(0, len(postlist)):
+        if postlist[i].read == True:
+            post = postlist[i]
+            host.append(post)
+    for post in host:
+        postlist.remove(post)
+        postlist.append(post)
+
+
 class Post:
     def __init__(self, postID, subject, author, date, data):
         self.postID = postID
@@ -85,7 +96,7 @@ class Group:
 with open('serverData.pkl', 'rb') as f:
     activeGroup = pickle.load(f)
 
-serverPort = 13003
+serverPort = 12005
 serverSocket = socket(AF_INET, SOCK_STREAM)
 serverSocket.bind(('', serverPort))
 serverSocket.listen(5)
@@ -321,7 +332,7 @@ class loginThread(threading.Thread):
                                         defaultN = len(currentGroup.postArray)
 
                                     if currentUser in currentGroup.subscribedUsers:
-
+                                        sort(currentGroup.postArray)
                                         for i in range(0, defaultN):
                                             post = currentGroup.postArray[i]
                                             if(post.read == True):
@@ -364,6 +375,7 @@ class loginThread(threading.Thread):
                                                             self.connectionSocket.send(buffer)
 
                                                         elif subsubcommand[0] == 'q':
+                                                            sort(currentGroup.postArray)
                                                             for j in range(0, defaultN):
                                                                 post = currentGroup.postArray[j]
                                                                 if (post.read == True):
@@ -398,12 +410,13 @@ class loginThread(threading.Thread):
                                                     if end > len(currentGroup.postArray):
                                                         end = len(currentGroup.postArray)
                                                     defaultN = end
+                                                    sort(currentGroup.postArray)
                                                     for it in range(start, end):
                                                         post = currentGroup.postArray[it]
                                                         if (post.read == True):
-                                                            buffer += str(i) + '.  ' + post.date + '  ' + post.subject + '\n'
+                                                            buffer += str(it) + '.  ' + post.date + '  ' + post.subject + '\n'
                                                         else:
-                                                            buffer += str(i) + '. N ' + post.date + '  ' + post.subject + '\n'
+                                                            buffer += str(it) + '. N ' + post.date + '  ' + post.subject + '\n'
                                                     self.connectionSocket.send(buffer)
 
                                                 else:
