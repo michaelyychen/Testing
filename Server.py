@@ -141,7 +141,7 @@ class loginThread(threading.Thread):
                             optionalcommand = 5
 
                             if len(commandsAll) > 1:
-                                optionalcommand = commandsAll[1]
+                                optionalcommand = int(commandsAll[1])
                                 #here uses the default value for N -> showing N items at a time
 
 
@@ -228,7 +228,7 @@ class loginThread(threading.Thread):
                             quitSG = False
                             optionalcommand = 5
                             if len(commandsAll) > 1:
-                                optionalcommand = commandsAll[1]
+                                optionalcommand = int(commandsAll[1])
                             # here uses the default value for N -> showing N items at a time
 
                             while index < optionalcommand:
