@@ -317,9 +317,8 @@ class loginThread(threading.Thread):
 
                                 else:
                                     self.connectionSocket.send('sg input invalid\n')
-                        # rg start
+
                         elif firstcommand == "rg":
-                            # initial buffer and find target group
                             buffer = ""
                             currentGroup = Group(-1, "temp")
                             foundGroup = False
@@ -329,8 +328,6 @@ class loginThread(threading.Thread):
                                         currentGroup = group
                                         foundGroup = True
                                         break
-
-                                # group is found
                                 if foundGroup == True:
                                     defaultN = 5
                                     if len(commandsAll) > 2:
@@ -339,9 +336,7 @@ class loginThread(threading.Thread):
                                     if defaultN > len(currentGroup.postArray):
                                         defaultN = len(currentGroup.postArray)
 
-                                    # you can only get into the group if you subscribe it
                                     if currentUser in currentGroup.subscribedUsers:
-                                    # once you get in show user all the post in the group , unread at top
                                         sort(currentGroup.postArray)
                                         for i in range(0, defaultN):
                                             post = currentGroup.postArray[i]
@@ -351,12 +346,10 @@ class loginThread(threading.Thread):
                                                 buffer += str(i) + '. N ' + post.date + '  ' + post.subject + '\n'
                                         self.connectionSocket.send(buffer)
                                         while 1:
-                                            #enter rg menu
                                             cmd = self.connectionSocket.recv(1024).split()
 
                                             subcommand = cmd[0].replace('\r\n', '')
                                             buffer = ''
-                                            #case 1. read certain post
                                             if subcommand.isdigit():
 
                                                 if int(subcommand) in range(0, defaultN):
@@ -371,11 +364,8 @@ class loginThread(threading.Thread):
                                                     self.connectionSocket.send(buffer)
 
                                                     while 1:
-                                                        # rg read post sub menu
                                                         buffer = ''
                                                         subsubcommand = self.connectionSocket.recv(1024).split()
-
-                                                        #display at most n lines for content
 
                                                         if subsubcommand[0].isdigit():
                                                             line = int(subsubcommand[0])
@@ -389,8 +379,6 @@ class loginThread(threading.Thread):
                                                                 buffer += postdiv[linenum] + '\n'
                                                             self.connectionSocket.send(buffer)
 
-                                                        # quit this submenu, go back to rg menu
-
                                                         elif subsubcommand[0] == 'q':
                                                             sort(currentGroup.postArray)
                                                             for j in range(0, defaultN):
@@ -401,7 +389,6 @@ class loginThread(threading.Thread):
                                                                     buffer += str(j) + '. N ' + post.date + '  ' + post.subject + '\n'
                                                             self.connectionSocket.send(buffer)
                                                             break
-                                            # mark certain post as read
                                             elif cmd[0] == 'r':
                                                 if len(cmd) < 2:
                                                     self.connectionSocket.send('invalid r cmd')
@@ -420,7 +407,6 @@ class loginThread(threading.Thread):
                                                             currentGroup.postArray[k].read = True
                                                         self.connectionSocket.send(buffer)
 
-                                            # show the next page, if all page are shown, quit rg menu
                                             elif cmd[0] == 'n':
                                                 buffer = ''
                                                 if defaultN < len(currentGroup.postArray):
@@ -442,7 +428,8 @@ class loginThread(threading.Thread):
                                                     self.connectionSocket.send('all post is shown, exist the rg menu \n')
                                                     break
 
-                                            #create a new post
+
+
                                             elif cmd[0] == 'p':
                                                 postid = str(currentGroup.groupID) + '-' + str(len(currentGroup.postArray) + 1)
                                                 self.connectionSocket.send('Please Give a Subject of your new post\n')
@@ -466,31 +453,45 @@ class loginThread(threading.Thread):
                                                     post = currentGroup.postArray[i]
                                                     buffer += str(i) + '.  ' + post.date + '  ' + post.subject + '\n'
                                                 self.connectionSocket.send(buffer)
-                                            #quit the rg menu
 
                                             elif cmd[0] == 'q':
                                                 self.connectionSocket.send('quit rg menu, back to main menu')
                                                 break
                                             else:
                                                 self.connectionSocket.send('input invalid\n')
-                                    #you are trying to get into a group that you didn't subscribe yet
+
                                     else:
                                         self.connectionSocket.send('You are not subscribe this group \n')
-                                    # group name not exist
+
                                 else:
                                     self.connectionSocket.send("The Group is invalid")
-                            # the rg cmd is invalid
+
                             else:
                                 self.connectionSocket.send('invalid rg cmd ex: rg [groupname] (optional: number) \n')
 
-                        #logout the user, send histroy back to user
                         elif firstcommand == "logout":
                             # remove user from activeUser array
                             activeUser.remove(currentUser)
                             self.connectionSocket.send("logout success")
                             #################send history to client##################
+                            historyCount = 0
+                            historyString = ""
+                            for tempGroup in activeGroup:
+                                subUsers = getattr(tempGroup, 'subscribedUsers')
+                                if currentUser in subUsers:
+                                    if historyCount!=0:
+                                        historyString = historyString+' '
+                                    historyCount = 1
+                                    historyString = historyString+str(tempGroup.groupID)+'-x'
+                                    for tempPost in tempGroup.postArray:
+                                        if(tempPost.read == True):
+		                                    historyString = historyString+' '
+		                                    historyString = historyString+str(tempGroup.groupID)+'-'+str(tempPost.postID)
+		                                    tempPost.read = False
+                                    subUsers.remove(currentUser)
+
                             temp_message = self.connectionSocket.recv(1024)
-                            self.connectionSocket.send("history!!!!!!")
+                            self.connectionSocket.send(historyString)
                             self.connectionSocket.close()
                             self.stop()
                             #################send history to client##################
