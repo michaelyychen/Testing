@@ -502,7 +502,7 @@ class loginThread(threading.Thread):
                                     for tempPost in tempGroup.postArray:
                                         if(tempPost.read == True):
 		                                    historyString = historyString+' '
-		                                    historyString = historyString+str(tempGroup.groupID)+'-'+str(tempPost.postID)
+		                                    historyString = historyString+str(tempGroup.groupID)+'-'+str(tempPost.postID-1)
 		                                    tempPost.read = False
                                     subUsers.remove(currentUser)
 
