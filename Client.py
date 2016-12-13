@@ -48,9 +48,8 @@ while isRunning==True:
 			text_file = open(file_name, "r")
 			history = text_file.read()
 			text_file.close()
-			print(history)
+			sentence = sentence + ' ' + history
 			print(sentence + ' ' + history)
-			#sentence = sentence + ' ' + history
 
 
 	clientSocket.send(sentence)
