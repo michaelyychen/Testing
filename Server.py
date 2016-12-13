@@ -455,6 +455,10 @@ class loginThread(threading.Thread):
                             # remove user from activeUser array
                             activeUser.remove(currentUser)
                             self.connectionSocket.send("logout success")
+                            #################send history to client##################
+                            temp_message = self.connectionSocket.recv(1024)
+                            self.connectionSocket.send("history!!!!!!")
+                            #################send history to client##################
                             break
                         else:
                             self.connectionSocket.send("invalid command")
