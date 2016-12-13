@@ -5,14 +5,20 @@ from socket import *
 argv = sys.argv
 host = argv[1]
 port = argv[2]
-usage_statement = 'help statement!!!!!'
+usage_statement = 'Usage statements:\n'
+usage_statement2 = 'login <username>:\tlogin with your user ID\n'
+usage_statement3 = 'help:\tprints a list of supported commands and sub-commands\n'
+usage_statement4 = 'help:\tprints a list of supported commands and sub-commands\n'
+usage_statement5 = 'ag N:\tIt takes an optional argument, N, and lists the names of all existing discussion groups, N groups at a time, numbered 1 to N. If N is not specified, a default value is used.\n'
+					
+
 port = int(port)
 
 clientSocket = socket(AF_INET, SOCK_STREAM)
 
 clientSocket.connect((host,port))
-
-while 1:
+isRunning = True
+while isRunning==True:
 	print ('1. Enter Your User Name (ex: login <username>)')
 	print ('2. Print usage statements (ex: help)')
 	print ('3. Exit the client program (ex: exit)')
@@ -57,6 +63,7 @@ while 1:
 	        	text_file2 = open(username+".txt", "w")
 	        	text_file2.write(data)
 	        	text_file2.close()
+	        	isRunning=False
 	        	break
 	        elif received =="invalid command":
 	        	print(usage_statement)
