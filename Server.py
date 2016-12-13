@@ -125,9 +125,7 @@ class loginThread(threading.Thread):
             elif commandsOriginal == "help":
                 self.connectionSocket.send("print usage")
 
-            elif firstcommand == "saveServer":
-                with open('serverData.pkl', 'wb') as output:
-                    pickle.dump(activeGroup, output, pickle.HIGHEST_PROTOCOL)
+
 
             elif firstcommand == "login":
                 userID = commandsAll[1]
@@ -162,7 +160,13 @@ class loginThread(threading.Thread):
 
 
                         firstcommand = commandsAll[0]
-                        if firstcommand == "ag":
+
+                        if firstcommand =="saveServer":
+                            with open('serverData.pkl', 'wb') as output:
+                                pickle.dump(activeGroup, output, pickle.HIGHEST_PROTOCOL)
+                            self.connectionSocket.send("Server Data has been updated")
+
+                        elif firstcommand == "ag":
                             index = 0  # index in the activeGroup Array
                             quit = False
                             optionalcommand = 5
