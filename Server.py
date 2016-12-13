@@ -111,7 +111,8 @@ class loginThread(threading.Thread):
         self._stop = threading.Event()
 
     def run(self):
-        while 1:
+        isConnectToClient = True
+        while isConnectToClient==True:
             commandsOriginal = self.connectionSocket.recv(1024)
             commandsAll = commandsOriginal.split()
             firstcommand = commandsAll[0]
@@ -151,7 +152,7 @@ class loginThread(threading.Thread):
                             optionalcommand = 5
 
                             if len(commandsAll) > 1:
-                                optionalcommand = commandsAll[1]
+                                optionalcommand = int(commandsAll[1])
                                 #here uses the default value for N -> showing N items at a time
 
 
@@ -238,7 +239,7 @@ class loginThread(threading.Thread):
                             quitSG = False
                             optionalcommand = 5
                             if len(commandsAll) > 1:
-                                optionalcommand = commandsAll[1]
+                                optionalcommand = int(commandsAll[1])
                             # here uses the default value for N -> showing N items at a time
 
                             while index < optionalcommand:
@@ -471,7 +472,10 @@ class loginThread(threading.Thread):
                             #################send history to client##################
                             temp_message = self.connectionSocket.recv(1024)
                             self.connectionSocket.send("history!!!!!!")
+                            self.connectionSocket.close()
+                            self.stop()
                             #################send history to client##################
+                            isConnectToClient = False
                             break
                         else:
                             self.connectionSocket.send("invalid command")
