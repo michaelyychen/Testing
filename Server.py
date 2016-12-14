@@ -96,7 +96,7 @@ class Group:
 with open('serverData.pkl', 'rb') as f:
     activeGroup = pickle.load(f)
 
-serverPort = 12003
+serverPort = 12000
 serverSocket = socket(AF_INET, SOCK_STREAM)
 serverSocket.bind(('', serverPort))
 serverSocket.listen(5)
@@ -361,8 +361,10 @@ class loginThread(threading.Thread):
                                     if defaultN > len(currentGroup.postArray):
                                         defaultN = len(currentGroup.postArray)
 
+
                                     if currentUser in currentGroup.subscribedUsers:
                                         sort(currentGroup.postArray)
+                                        temp = defaultN
                                         for i in range(0, defaultN):
                                             post = currentGroup.postArray[i]
                                             if(post.read == True):
@@ -380,29 +382,56 @@ class loginThread(threading.Thread):
                                                 if int(subcommand) in range(0, defaultN):
                                                     currentpost = currentGroup.postArray[int(subcommand)]
                                                     currentpost.read = True
+                                                    start = 0
+                                                    end = defaultN
                                                     postdiv = currentpost.data.split('\n')
                                                     buffer += 'Group : ' + currentGroup.name + '\n'
                                                     buffer += 'Subject : ' + currentpost.subject + '\n'
                                                     buffer += 'Author : ' + currentpost.author + '\n'
                                                     buffer += 'Date : ' + currentpost.date + '\n\n'
-                                                    buffer += currentGroup.postArray[int(subcommand)].data + '\n'
+                                                    if (end > len(postdiv)):
+                                                        end = len(postdiv)
+                                                    for linenum in range(start, end):
+                                                        buffer += postdiv[linenum] + '\n'
                                                     self.connectionSocket.send(buffer)
+
+
 
                                                     while 1:
                                                         buffer = ''
                                                         subsubcommand = self.connectionSocket.recv(1024).split()
+                                                        if subsubcommand[0] == 'n':
 
-                                                        if subsubcommand[0].isdigit():
-                                                            line = int(subsubcommand[0])
-                                                            if line > len(postdiv):
-                                                                line = len(postdiv)
-                                                            buffer += 'Group : ' + currentGroup.name + '\n'
-                                                            buffer += 'Subject : ' + currentpost.subject + '\n'
-                                                            buffer += 'Author : ' + currentpost.author + '\n'
-                                                            buffer += 'Date : ' + currentpost.date + '\n\n'
-                                                            for linenum in range(0, line):
+                                                            if end >= len(postdiv):
+                                                                buffer = ''
+                                                                self.connectionSocket.send(
+                                                                    'the post is all read, go back to rg menu \n')
+                                                                sort(currentGroup.postArray)
+                                                                for j in range(0, defaultN):
+                                                                    post = currentGroup.postArray[j]
+                                                                    if (post.read == True):
+                                                                        buffer += str(
+                                                                            j) + '.  ' + post.date + '  ' + post.subject + '\n'
+                                                                    else:
+                                                                        buffer += str(
+                                                                            j) + '. N ' + post.date + '  ' + post.subject + '\n'
+                                                                self.connectionSocket.send(buffer)
+                                                                break
+                                                            else:
+                                                                start = end
+                                                                end = start+defaultN
+                                                                if end > len(postdiv):
+                                                                    end = len(postdiv)
+
+
+
+
+
+                                                            for linenum in range(start, end):
                                                                 buffer += postdiv[linenum] + '\n'
                                                             self.connectionSocket.send(buffer)
+
+
 
                                                         elif subsubcommand[0] == 'q':
                                                             sort(currentGroup.postArray)
@@ -414,6 +443,8 @@ class loginThread(threading.Thread):
                                                                     buffer += str(j) + '. N ' + post.date + '  ' + post.subject + '\n'
                                                             self.connectionSocket.send(buffer)
                                                             break
+                                                        else:
+                                                            connectionSocket.send('invalid cmd')
                                             elif cmd[0] == 'r':
                                                 if len(cmd) < 2:
                                                     self.connectionSocket.send('invalid r cmd')
@@ -434,12 +465,13 @@ class loginThread(threading.Thread):
 
                                             elif cmd[0] == 'n':
                                                 buffer = ''
-                                                if defaultN < len(currentGroup.postArray):
-                                                    start = defaultN
-                                                    end = 2 * defaultN
+
+                                                if temp < len(currentGroup.postArray):
+                                                    start = temp
+                                                    end = start+ defaultN
                                                     if end > len(currentGroup.postArray):
                                                         end = len(currentGroup.postArray)
-                                                    defaultN = end
+                                                    temp = end
                                                     sort(currentGroup.postArray)
                                                     for it in range(start, end):
                                                         post = currentGroup.postArray[it]
@@ -476,7 +508,10 @@ class loginThread(threading.Thread):
                                                 buffer += 'Post Created \n'
                                                 for i in range(0, defaultN):
                                                     post = currentGroup.postArray[i]
-                                                    buffer += str(i) + '.  ' + post.date + '  ' + post.subject + '\n'
+                                                    if (post.read == True):
+                                                        buffer += str(i) + '.  ' + post.date + '  ' + post.subject + '\n'
+                                                    else:
+                                                        buffer += str(i) + '. N ' + post.date + '  ' + post.subject + '\n'
                                                 self.connectionSocket.send(buffer)
 
                                             elif cmd[0] == 'q':
