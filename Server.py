@@ -96,7 +96,7 @@ class Group:
 with open('serverData.pkl', 'rb') as f:
     activeGroup = pickle.load(f)
 
-serverPort = 12000
+serverPort = 12001
 serverSocket = socket(AF_INET, SOCK_STREAM)
 serverSocket.bind(('', serverPort))
 serverSocket.listen(5)
@@ -445,6 +445,9 @@ class loginThread(threading.Thread):
                                                             break
                                                         else:
                                                             connectionSocket.send('invalid cmd')
+
+                                                else :
+                                                    connectionSocket.send("Please give a valid line number start from 0( not post number) \n")
                                             elif cmd[0] == 'r':
                                                 if len(cmd) < 2:
                                                     self.connectionSocket.send('invalid r cmd')
@@ -515,7 +518,7 @@ class loginThread(threading.Thread):
                                                 self.connectionSocket.send(buffer)
 
                                             elif cmd[0] == 'q':
-                                                self.connectionSocket.send('quit rg menu, back to main menu')
+                                                self.connectionSocket.send('quit rg menu, back to main menu\n')
                                                 break
                                             else:
                                                 self.connectionSocket.send('input invalid\n')
@@ -524,7 +527,7 @@ class loginThread(threading.Thread):
                                         self.connectionSocket.send('You are not subscribe this group \n')
 
                                 else:
-                                    self.connectionSocket.send("The Group is invalid")
+                                    self.connectionSocket.send("The Group is invalid\n")
 
                             else:
                                 self.connectionSocket.send('invalid rg cmd ex: rg [groupname] (optional: number) \n')
