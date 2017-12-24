@@ -7,11 +7,11 @@ Server side implements a multithread process to handle multiple clients simultan
 and user data in a file locally.
 
 ## How to Run It
-
 1. Run Server (Python 2.7)
    - Python Server.py
 2. Run Client
    - Python Client.py
+<br>
 
 ##Client Usage
 - login \<userid>: login with userid
