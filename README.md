@@ -11,9 +11,9 @@ and user data in a file locally.
    - Python Server.py
 2. Run Client
    - Python Client.py
-<br>
 
-##Client Usage
+
+## Client Usage
 - login \<userid>: login with userid
 - help: display all commands with a brief description
 - logout: logout from the application
