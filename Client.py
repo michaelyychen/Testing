@@ -12,7 +12,7 @@ ut=ut + 'help:\tprints a list of supported commands and sub-commands\n'
 ut=ut + 'logout:\tIt logs out the current user, and terminate the client program after all proper updates are completed\n'
 ut=ut + 'ag N:\tIt takes an optional argument, N, and lists the names of all existing discussion groups, N groups at a time, numbered 1 to N. If N is not specified, a default value is used.\n'
 ut=ut + 'sub-commands for ag N:\n'
-ut=ut + 's - subscribe to groups. It takes one or more numbers between 1 and N as arguments.\n'	
+ut=ut + 's - subscribe to groups. It takes one or more numbers between 1 and N as arguments.\n'
 ut=ut + 'u - unsubscribe. It has the same syntax as the s command, except that it is used to unsubscribe from one or more groups.\n'
 ut=ut + 'n - lists the next N discussion groups. If all groups are displayed, the program exits from the ag command mode\n'
 ut=ut + 'q - exits from the ag command, before finishing displaying all groups\n'
@@ -49,29 +49,33 @@ while isRunning==True:
 			history = text_file.read()
 			text_file.close()
 			sentence = sentence + ' ' + history
-			#print(sentence + ' ' + history)
-
 
 	clientSocket.send(sentence)
 
-
 	loginreceived = clientSocket.recv(1024)
 	print (loginreceived)
+
 	if loginreceived =="client exit":
 		break
+
 	if loginreceived =="print usage":
 		print(usage_statement)
+
 	if loginreceived =="invalid command":
 		print(usage_statement)
+
 	if loginreceived =="login success":
 	    while 1 :
 	        cmd = raw_input('>>> ')
+
 	        if cmd =="help":
 	        	print(usage_statement)
 	        	continue
+
 	        clientSocket.send(cmd)
 	        received = clientSocket.recv(1024)
-	        print (received)
+			print (received)
+
 	        if received =="logout success":
 	        	clientSocket.send('send data')
 	        	data = clientSocket.recv(1024)
@@ -80,6 +84,6 @@ while isRunning==True:
 	        	text_file2.close()
 	        	isRunning=False
 	        	break
+
 	        elif received =="invalid command":
 	        	print(usage_statement)
-

@@ -1,14 +1,12 @@
 from socket import *
+from datetime import *
 import pickle
 import threading
-from datetime import *
-
 
 activeUser = []
 activeGroup = []
 currentUser = ""
 authenticated = False
-
 
 def sort(postlist):
     host = []
@@ -20,11 +18,9 @@ def sort(postlist):
         postlist.remove(post)
         postlist.append(post)
 
-
 class Post:
     def __init__(self, postID, subject, author, date, data):
         self.postID = postID
-        # self.groupname =groupname
         self.subject = subject
         self.author = author
         self.date = date
@@ -63,7 +59,6 @@ class Group:
 
 # initialize some groups and posts
 
-
 # activeGroup.append(group1)
 # activeGroup.append(group2)
 # activeGroup.append(group3)
@@ -81,18 +76,6 @@ class Group:
 # activeGroup.append(group15)
 
 
-
-
-# for num in range(0, 44):
-#     postid = (num // 15) + 1
-#     newPost = Post(postid, "This is post" + str(postid), "Author " + str(postid), "Sat, Nov 12 19:34:03 EST 2016",
-#                    "Testestsetestset" + str(postid))
-#
-#     groupToAdd = getattr(activeGroup[num % 15], 'postArray')
-#     groupToAdd.append(newPost)
-# #use for test
-# activeGroup[0].subscribedUsers.append('jhao')
-####
 with open('serverData.pkl', 'rb') as f:
     activeGroup = pickle.load(f)
 
@@ -112,20 +95,21 @@ class loginThread(threading.Thread):
 
     def run(self):
         isConnectToClient = True
+
         while isConnectToClient==True:
             commandsOriginal = self.connectionSocket.recv(1024)
             commandsAll = commandsOriginal.split()
             firstcommand = commandsAll[0]
             print (commandsOriginal)
+
             if commandsOriginal == "exit":
                 self.connectionSocket.send("client exit")
                 self.connectionSocket.close()
                 self.stop()
                 break
+
             elif commandsOriginal == "help":
                 self.connectionSocket.send("print usage")
-
-
 
             elif firstcommand == "login":
                 userID = commandsAll[1]
@@ -145,6 +129,7 @@ class loginThread(threading.Thread):
                             group = int(history[0])
                             if userID not in activeGroup[group].subscribedUsers:
                                 activeGroup[group].subscribedUsers.append(userID)
+
                             if str(history[1]) != 'x':
                                 post = int(history[1])
                                 if post < len(activeGroup[group].postArray):
@@ -157,7 +142,6 @@ class loginThread(threading.Thread):
                         firstcommand =""
                         buffer = ""
                         commandsAll = self.connectionSocket.recv(1024).split()
-
 
                         firstcommand = commandsAll[0]
 
@@ -175,13 +159,13 @@ class loginThread(threading.Thread):
                                 optionalcommand = int(commandsAll[1])
                                 #here uses the default value for N -> showing N items at a time
 
-
                             while index < optionalcommand:
                                 if currentUser not in getattr(activeGroup[index], 'subscribedUsers'):
                                     buffer += str(index) + '. ( )     ' + getattr(activeGroup[index], 'name') + '\n'
                                 else:
                                     buffer += str(index) + '. (s)     ' + getattr(activeGroup[index], 'name') + '\n'
                                 index += 1
+
                             self.connectionSocket.send(buffer)
 
                             while quit==False:
@@ -264,8 +248,8 @@ class loginThread(threading.Thread):
                             optionalcommand = 5
                             if len(commandsAll) > 1:
                                 optionalcommand = int(commandsAll[1])
-                            # here uses the default value for N -> showing N items at a time
 
+                            # here uses the default value for N -> showing N items at a time
                             while count < optionalcommand and index < len(activeGroup):
                                 # list all the group up to N
                                 if currentUser in getattr(activeGroup[index], 'subscribedUsers'):
@@ -292,10 +276,10 @@ class loginThread(threading.Thread):
                                             ##subscribe to index + argument group
                                             groupToUnsubscribe = getattr(activeGroup[int(subcommand[temp])], 'subscribedUsers')
                                             buffer += "Unsubscribing group " + getattr(activeGroup[int(subcommand[temp])],'name')+'\n'
-                                            # activeGroup[groupToSubscribe].getUserArray.Remove
+
                                             if currentUser in groupToUnsubscribe:
                                                 groupToUnsubscribe.remove(currentUser)
-                                            
+
                                         else:
                                             print ("index out of bound")
                                         temp += 1
@@ -308,6 +292,7 @@ class loginThread(threading.Thread):
                                             buffer += "------All Group Has Been Shown------"
                                             quit = True
                                             break
+
                                         if currentUser in getattr(activeGroup[index], 'subscribedUsers'):
                                             unreadPost = 0
                                             groupPost = getattr(activeGroup[index], 'postArray')
@@ -361,7 +346,6 @@ class loginThread(threading.Thread):
                                     if defaultN > len(currentGroup.postArray):
                                         defaultN = len(currentGroup.postArray)
 
-
                                     if currentUser in currentGroup.subscribedUsers:
                                         sort(currentGroup.postArray)
                                         temp = defaultN
@@ -395,8 +379,6 @@ class loginThread(threading.Thread):
                                                         buffer += postdiv[linenum] + '\n'
                                                     self.connectionSocket.send(buffer)
 
-
-
                                                     while 1:
                                                         buffer = ''
                                                         subsubcommand = self.connectionSocket.recv(1024).split()
@@ -423,15 +405,9 @@ class loginThread(threading.Thread):
                                                                 if end > len(postdiv):
                                                                     end = len(postdiv)
 
-
-
-
-
                                                             for linenum in range(start, end):
                                                                 buffer += postdiv[linenum] + '\n'
                                                             self.connectionSocket.send(buffer)
-
-
 
                                                         elif subsubcommand[0] == 'q':
                                                             sort(currentGroup.postArray)
@@ -572,12 +548,6 @@ class loginThread(threading.Thread):
         self._stop.set()
 
 
-
 while 1:
     (connectionSocket, addr) = serverSocket.accept()
     loginThread(connectionSocket).start()
-
-
-
-
-
